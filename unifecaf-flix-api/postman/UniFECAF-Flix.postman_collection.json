@@ -1,0 +1,163 @@
+{
+  "info": {
+    "_postman_id": "63fb9220-4c85-4fc6-9aa4-a4a7325632b1",
+    "name": "UniFECAF Flix API",
+    "description": "Coleção de verificação dos endpoints de leitura. Execute primeiro a listagem; ela guarda o primeiro ID disponível para os testes seguintes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/v1/controle-filmes"
+    },
+    {
+      "key": "filmeId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Filmes",
+      "item": [
+        {
+          "name": "Listar todos os filmes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/filme"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200 e lista de filmes', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.data).to.be.an('array');",
+                  "  if (body.data.length) pm.collectionVariables.set('filmeId', body.data[0].id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar filme por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/filme/{{filmeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200 e ID correspondente', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.data.id).to.eql(Number(pm.collectionVariables.get('filmeId')));",
+                  "  pm.expect(body.data).to.have.property('sinopse');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filtrar por parte do nome ou sinopse",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/filtro/filme?nome=mensagens"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Busca por trecho da sinopse', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.data).to.be.an('array').that.is.not.empty;",
+                  "  pm.expect(body.data[0].sinopse.toLowerCase()).to.include('mensagens');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Validar ID inválido (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/filme/abc"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400 com erro padronizado', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().error.code).to.eql('ID_INVALIDO');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filme inexistente (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/filme/2147483647"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404 com erro padronizado', function () {",
+                  "  pm.response.to.have.status(404);",
+                  "  pm.expect(pm.response.json().error.code).to.eql('FILME_NAO_ENCONTRADO');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Busca sem nome (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/filtro/filme"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400 para parâmetro ausente', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().error.code).to.eql('NOME_OBRIGATORIO');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
