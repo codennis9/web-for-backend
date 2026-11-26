@@ -1,0 +1,30 @@
+RELATÓRIO DE TESTES - UniFECAF Flix API
+Data: 25/11/2026 21:12:42
+Base URL: http://localhost:3000/v1/controle-filmes
+====================================================================================================
+ #  RESULTADO ESPERADO OBTIDO  TESTE
+----------------------------------------------------------------------------------------------------
+ 1  PASSOU         200    200  Listar todos os filmes  [GET /filme]
+ 2  PASSOU         200    200  Listar com paginação (page=1&limit=2)  [GET /filme?page=1&limit=2]
+ 3  PASSOU         400    400  Paginação incompleta (só page)  [GET /filme?page=1]
+ 4  PASSOU         400    400  Paginação com limit acima do máximo  [GET /filme?page=1&limit=101]
+ 5  PASSOU         200    200  Buscar filme por ID (3)  [GET /filme/3]
+ 6  PASSOU         404    404  ID inexistente  [GET /filme/2147483647]
+ 7  PASSOU         400    400  ID não numérico  [GET /filme/abc]
+ 8  PASSOU         400    400  ID zero  [GET /filme/0]
+ 9  PASSOU         400    400  ID negativo  [GET /filme/-1]
+10  PASSOU         400    400  ID decimal  [GET /filme/1.5]
+11  PASSOU         200    200  Filtrar por parte do nome ('A Ca')  [GET /filtro/filme?nome=A%20Ca]
+12  PASSOU         200    200  Filtro ignora maiúsculas/minúsculas  [GET /filtro/filme?nome=A%20CA]
+13  PASSOU         200    200  Filtrar por trecho da sinopse ('mensagens')  [GET /filtro/filme?nome=mensagens]
+14  PASSOU         200    200  Filtro com acentuação preservada ('cartógrafa')  [GET /filtro/filme?nome=cart%C3%B3grafa]
+15  PASSOU         200    200  Filtro sem resultados retorna lista vazia  [GET /filtro/filme?nome=zzzxyz123]
+16  PASSOU         200    200  Filtro com paginação  [GET /filtro/filme?nome=a&page=1&limit=1]
+17  PASSOU         400    400  Filtro sem parâmetro nome  [GET /filtro/filme]
+18  PASSOU         400    400  Filtro com nome vazio  [GET /filtro/filme?nome=]
+19  PASSOU         400    400  Filtro com nome muito longo  [GET /filtro/filme?nome=xxxxxxxxxxxxxxxxxxxxxxxxxxxx...]
+20  PASSOU         200    200  Filtro com tentativa de SQL Injection é tratado como texto  [GET /filtro/filme?nome=%27%20OR%201%3D1%20--]
+21  PASSOU         404    404  Rota inexistente  [GET /nao-existe]
+22  PASSOU         200    200  Cabeçalhos de segurança (Helmet) e rastreio  [GET /filme]
+----------------------------------------------------------------------------------------------------
+Total: 22 | Passaram: 22 | Falharam: 0

@@ -11,7 +11,8 @@ Uso:
     python scripts/testar_api.py --relatorio docs/relatorio_testes.txt
 
 Pré-requisito: MySQL com o script sql/controle_filmes.sql e a API rodando
-(npm run dev). Código de saída: 0 se tudo passou, 1 se algum teste falhou.
+(npm run dev). Código de saída: 0 se tudo passou, 1 se algum teste falhou,
+2 se a API estiver inacessível.
 """
 
 import argparse
@@ -163,6 +164,10 @@ class Suite:
                       "resultado não contém o termo buscado")
 
         self.caso("Filtrar por trecho da sinopse ('mensagens')", "/filtro/filme?nome=mensagens", 200, por_sinopse)
+        self.caso("Filtro com acentuação preservada ('cartógrafa')",
+                  "/filtro/filme?nome=" + urllib.parse.quote("cartógrafa"), 200,
+                  lambda r: verificar(len(r.corpo["data"]) >= 1 and "cartógrafa" in r.corpo["data"][0]["sinopse"],
+                                      "acentos corrompidos no banco ou na resposta"))
         self.caso("Filtro sem resultados retorna lista vazia", "/filtro/filme?nome=zzzxyz123", 200,
                   lambda r: verificar(r.corpo["data"] == [], "esperado data = []"))
         self.caso("Filtro com paginação", "/filtro/filme?nome=a&page=1&limit=1", 200,
@@ -222,6 +227,17 @@ def main() -> int:
     parser.add_argument("--base-url", default=BASE_URL_PADRAO, help=f"padrão: {BASE_URL_PADRAO}")
     parser.add_argument("--relatorio", help="caminho para salvar o relatório em texto (opcional)")
     args = parser.parse_args()
+
+    try:
+        requisitar(args.base_url.rstrip("/") + "/filme")
+    except (urllib.error.URLError, OSError) as erro:
+        print(f"ERRO: não foi possível conectar à API em {args.base_url}\n({erro})\n")
+        print("Antes de rodar os testes:")
+        print("  1. Execute sql/controle_filmes.sql no MySQL")
+        print("  2. Copie .env.example para .env e ajuste DATABASE_URL")
+        print("  3. npm install && npm run db:generate")
+        print("  4. Em OUTRO terminal, inicie a API: npm run dev")
+        return 2
 
     suite = Suite(args.base_url)
     suite.executar()
